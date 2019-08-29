@@ -10,6 +10,7 @@ module Kafka
       def initialize(group_id:, session_timeout:, member_id:, topics: [])
         @group_id = group_id
         @session_timeout = session_timeout * 1000 # Kafka wants ms.
+        @rebalance_timeout = @session_timeout
         @member_id = member_id || ""
         @protocol_type = PROTOCOL_TYPE
         @group_protocols = {
@@ -21,6 +22,10 @@ module Kafka
         JOIN_GROUP_API
       end
 
+      def api_version
+        1
+      end
+
       def response_class
         JoinGroupResponse
       end
@@ -28,6 +33,7 @@ module Kafka
       def encode(encoder)
         encoder.write_string(@group_id)
         encoder.write_int32(@session_timeout)
+        encoder.write_int32(@rebalance_timeout)
         encoder.write_string(@member_id)
         encoder.write_string(@protocol_type)
 
